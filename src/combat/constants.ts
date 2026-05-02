@@ -4,19 +4,19 @@ export const MAX_LIFE = 100;
 export const MAX_POSTURE = 100;
 
 export const LIGHT_ATTACK: AttackProfile = {
-  lifeDamage: 12,
-  postureDamage: 16,
+  lifeDamage: 10,
+  postureDamage: 18,
   blockedLifeDamage: 1,
-  blockedPostureDamage: 28,
-  parriedPostureDamage: 34
+  blockedPostureDamage: 24,
+  parriedPostureDamage: 38
 };
 
-export const POSTURE_BREAK_STUN_MS = 650;
-export const HITSTUN_MS = 180;
-export const PARRY_WINDOW_MS = 140;
-export const ROLL_INVULNERABLE_MS = 180;
-export const ROLL_DURATION_MS = 320;
-export const POSTURE_RECOVERY_PER_SECOND = 9;
+export const POSTURE_BREAK_STUN_MS = 720;
+export const HITSTUN_MS = 150;
+export const PARRY_WINDOW_MS = 125;
+export const ROLL_INVULNERABLE_MS = 165;
+export const ROLL_DURATION_MS = 300;
+export const POSTURE_RECOVERY_PER_SECOND = 7;
 
 export const FIGHTER_SPRITE_SCALE = 0.364;
 

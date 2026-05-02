@@ -13,7 +13,7 @@ describe("combat rules", () => {
 
     expect(outcome.result).toBe("blocked");
     expect(outcome.defender.life).toBe(99);
-    expect(outcome.defender.posture).toBe(72);
+    expect(outcome.defender.posture).toBe(76);
   });
 
   it("parry damages attacker posture instead of defender posture", () => {
@@ -23,7 +23,7 @@ describe("combat rules", () => {
     const outcome = resolveHit(attacker, defender, LIGHT_ATTACK);
 
     expect(outcome.result).toBe("parried");
-    expect(outcome.attacker.posture).toBe(66);
+    expect(outcome.attacker.posture).toBe(62);
     expect(outcome.defender.posture).toBe(100);
   });
 
@@ -59,18 +59,18 @@ describe("combat rules", () => {
     const outcome = resolveHit(attacker, defender, LIGHT_ATTACK);
 
     expect(outcome.result).toBe("hit");
-    expect(outcome.defender.life).toBe(88);
-    expect(outcome.defender.posture).toBe(84);
+    expect(outcome.defender.life).toBe(90);
+    expect(outcome.defender.posture).toBe(82);
     expect(outcome.defender.state).toBe("hitstun");
 
-    const recovered = tickFighter(outcome.defender, 180);
+    const recovered = tickFighter(outcome.defender, 150);
     expect(recovered.state).toBe("idle");
   });
 
   it("parry window expires into held block", () => {
     const defender = beginBlock(createFighter("defender", "left"));
 
-    const expired = tickFighter(defender, 141);
+    const expired = tickFighter(defender, 126);
 
     expect(expired.state).toBe("block");
   });
@@ -80,6 +80,6 @@ describe("combat rules", () => {
 
     const recovered = tickFighter(fighter, 1000);
 
-    expect(recovered.posture).toBe(59);
+    expect(recovered.posture).toBe(57);
   });
 });
