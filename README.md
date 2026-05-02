@@ -24,6 +24,15 @@ Umbral Duel is a gothic 2D combat prototype focused on tight one-versus-one duel
 - `R`: reset round
 - `H`: toggle hitboxes
 
+## Prototype Debugging
+
+- Press `H` to toggle hitboxes.
+- The red rectangle is the active sword hitbox.
+- The blue rectangles are fighter hurtboxes.
+- Debug text shows fighter states, posture, life, and current bot intent.
+
+The current combat tuning is intentionally visible and testable. Before adding multiplayer, use the bot duel to evaluate parry timing, posture pressure, roll invulnerability, hitstun, attack recovery, and bot pacing.
+
 ## Development
 
 Install dependencies:
