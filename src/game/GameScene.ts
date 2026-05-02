@@ -11,7 +11,7 @@ import type { ControllerContext } from "./controllers/types";
 import { FighterEntity } from "./FighterEntity";
 import { createHudBars, updateHudBars, type HudBars } from "./hud";
 
-const FLOOR_Y = 390;
+const FLOOR_Y = 418;
 const FIGHTER_VISUAL_FOOT_OFFSET = 39;
 const PLAYER_START_X = 300;
 const BOT_START_X = 640;
