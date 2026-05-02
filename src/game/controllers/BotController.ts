@@ -3,9 +3,13 @@ import {
   BOT_ATTACK_COOLDOWN_MAX_MS,
   BOT_ATTACK_COOLDOWN_MIN_MS,
   BOT_BLOCK_CHANCE,
+  BOT_HOLD_RANGE_MAX_MS,
+  BOT_HOLD_RANGE_MIN_MS,
+  BOT_LOW_POSTURE_RETREAT_RANGE,
   BOT_LOW_POSTURE_THRESHOLD,
   BOT_OPTIMAL_RANGE,
   BOT_PARRY_CHANCE,
+  BOT_PUNISH_CHANCE,
   BOT_REACTION_DELAY_MS,
   BOT_ROLL_COOLDOWN_MS,
   BOT_TOO_CLOSE_RANGE
@@ -20,6 +24,7 @@ export class BotController implements FighterController {
   private reactionMs = BOT_REACTION_DELAY_MS;
   private blockHoldMs = 0;
   private repositionMs = 0;
+  private holdRangeMs = 0;
   lastDecision = "watch";
 
   constructor(private readonly random: () => number = Math.random) {}
@@ -30,6 +35,7 @@ export class BotController implements FighterController {
     this.reactionMs = Math.max(0, this.reactionMs - context.deltaMs);
     this.blockHoldMs = Math.max(0, this.blockHoldMs - context.deltaMs);
     this.repositionMs = Math.max(0, this.repositionMs - context.deltaMs);
+    this.holdRangeMs = Math.max(0, this.holdRangeMs - context.deltaMs);
 
     const distance = Math.abs(context.distanceX);
     const directionToOpponent = context.distanceX > 0 ? 1 : -1;
@@ -42,10 +48,15 @@ export class BotController implements FighterController {
       return { ...neutralIntent, block: true };
     }
 
-    if (lowPosture && distance < BOT_APPROACH_RANGE && this.rollCooldownMs <= 0) {
+    if (lowPosture && distance < BOT_LOW_POSTURE_RETREAT_RANGE && this.rollCooldownMs <= 0) {
       this.rollCooldownMs = BOT_ROLL_COOLDOWN_MS;
       this.lastDecision = "retreat-roll";
       return { ...neutralIntent, move: directionAway, roll: true };
+    }
+
+    if (lowPosture && distance < BOT_LOW_POSTURE_RETREAT_RANGE) {
+      this.lastDecision = "guard-retreat";
+      return { ...neutralIntent, move: directionAway, block: context.opponentIsAttacking };
     }
 
     if (context.opponentIsAttacking && this.reactionMs <= 0 && distance <= BOT_APPROACH_RANGE) {
@@ -63,10 +74,15 @@ export class BotController implements FighterController {
     }
 
     if (context.opponentIsRecovering && distance <= BOT_OPTIMAL_RANGE && this.attackCooldownMs <= 0) {
-      this.setAttackCooldown();
-      this.repositionMs = 220;
-      this.lastDecision = "punish";
-      return { ...neutralIntent, attack: true };
+      if (this.random() < BOT_PUNISH_CHANCE) {
+        this.setAttackCooldown();
+        this.repositionMs = 220;
+        this.lastDecision = "punish";
+        return { ...neutralIntent, attack: true };
+      }
+      this.setHoldRange();
+      this.lastDecision = "read";
+      return neutralIntent;
     }
 
     if (distance > BOT_OPTIMAL_RANGE) {
@@ -90,6 +106,22 @@ export class BotController implements FighterController {
       return { ...neutralIntent, move: directionAway };
     }
 
+    if (distance <= BOT_OPTIMAL_RANGE && this.holdRangeMs > 0) {
+      this.lastDecision = "read";
+      return neutralIntent;
+    }
+
+    if (
+      distance <= BOT_OPTIMAL_RANGE &&
+      this.attackCooldownMs <= 0 &&
+      this.holdRangeMs <= 0 &&
+      this.random() < 0.45
+    ) {
+      this.setHoldRange();
+      this.lastDecision = "read";
+      return neutralIntent;
+    }
+
     if ((distance <= BOT_OPTIMAL_RANGE || opponentLowPosture) && this.attackCooldownMs <= 0) {
       this.setAttackCooldown(opponentLowPosture ? 0.75 : 1);
       this.repositionMs = 180 + this.random() * 180;
@@ -104,5 +136,10 @@ export class BotController implements FighterController {
   private setAttackCooldown(multiplier = 1): void {
     const range = BOT_ATTACK_COOLDOWN_MAX_MS - BOT_ATTACK_COOLDOWN_MIN_MS;
     this.attackCooldownMs = (BOT_ATTACK_COOLDOWN_MIN_MS + this.random() * range) * multiplier;
+  }
+
+  private setHoldRange(): void {
+    const range = BOT_HOLD_RANGE_MAX_MS - BOT_HOLD_RANGE_MIN_MS;
+    this.holdRangeMs = BOT_HOLD_RANGE_MIN_MS + this.random() * range;
   }
 }

@@ -83,6 +83,54 @@ describe("BotController", () => {
     expect(bot.lastDecision).toBe("attack");
   });
 
+  it("sometimes reads at range before attacking", () => {
+    const bot = new BotController(() => 0.2);
+    bot.update({
+      self: createFighter("bot", "left"),
+      opponent: createFighter("player", "right"),
+      distanceX: -240,
+      opponentIsAttacking: false,
+      opponentIsRecovering: false,
+      deltaMs: 320
+    });
+
+    const intent = bot.update({
+      self: createFighter("bot", "left"),
+      opponent: createFighter("player", "right"),
+      distanceX: -(BOT_OPTIMAL_RANGE - 4),
+      opponentIsAttacking: false,
+      opponentIsRecovering: false,
+      deltaMs: 16
+    });
+
+    expect(intent.attack).toBe(false);
+    expect(bot.lastDecision).toBe("read");
+  });
+
+  it("does not always punish recovery", () => {
+    const bot = new BotController(() => 0.95);
+    bot.update({
+      self: createFighter("bot", "left"),
+      opponent: createFighter("player", "right"),
+      distanceX: -240,
+      opponentIsAttacking: false,
+      opponentIsRecovering: false,
+      deltaMs: 320
+    });
+
+    const intent = bot.update({
+      self: createFighter("bot", "left"),
+      opponent: createFighter("player", "right"),
+      distanceX: -(BOT_OPTIMAL_RANGE - 4),
+      opponentIsAttacking: false,
+      opponentIsRecovering: true,
+      deltaMs: 16
+    });
+
+    expect(intent.attack).toBe(false);
+    expect(bot.lastDecision).toBe("read");
+  });
+
   it("retreats with roll when posture is low and roll cooldown is ready", () => {
     const bot = new BotController(() => 0.9);
     bot.update({

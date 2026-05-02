@@ -50,5 +50,9 @@ export const BOT_ROLL_COOLDOWN_MS = 1400;
 export const BOT_REACTION_DELAY_MS = 220;
 export const BOT_PARRY_CHANCE = 0.42;
 export const BOT_BLOCK_CHANCE = 0.65;
+export const BOT_HOLD_RANGE_MIN_MS = 180;
+export const BOT_HOLD_RANGE_MAX_MS = 420;
+export const BOT_LOW_POSTURE_RETREAT_RANGE = 130;
+export const BOT_PUNISH_CHANCE = 0.72;
 
 export const ROUND_RESET_DELAY_MS = 1300;
