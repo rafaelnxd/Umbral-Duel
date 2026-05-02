@@ -17,6 +17,7 @@ export interface FighterEntityConfig {
 export class FighterEntity {
   model: Fighter;
   readonly sprite: Phaser.Types.Physics.Arcade.SpriteWithDynamicBody;
+  readonly silhouette: Phaser.GameObjects.Sprite;
   attackId = 0;
   attackElapsedMs = 0;
   hitIds = new Set<string>();
@@ -26,10 +27,17 @@ export class FighterEntity {
     this.model = createFighter(config.id, config.facing);
     this.baseTint = config.tint ?? 0xffffff;
     this.sprite = scene.physics.add.sprite(config.x, config.y, config.texture);
+    this.silhouette = scene.add.sprite(config.x, config.y, config.texture);
+    this.silhouette
+      .setScale(FIGHTER_SPRITE_SCALE * 1.035)
+      .setTint(0x050207)
+      .setAlpha(0.72)
+      .setDepth(4);
     this.sprite.setScale(FIGHTER_SPRITE_SCALE);
+    this.sprite.setDepth(5);
     this.sprite.setCollideWorldBounds(true);
-    this.sprite.body.setSize(120, 620);
-    this.sprite.body.setOffset(150, 90);
+    this.sprite.body.setSize(92, 256);
+    this.sprite.body.setOffset(164, 214);
   }
 
   get id(): string {
@@ -82,5 +90,12 @@ export class FighterEntity {
     this.hitIds.clear();
     this.sprite.setPosition(x, y);
     this.sprite.setVelocity(0, 0);
+    this.syncSilhouette();
+  }
+
+  syncSilhouette(): void {
+    this.silhouette.setPosition(this.sprite.x, this.sprite.y + 1);
+    this.silhouette.setFlipX(this.sprite.flipX);
+    this.silhouette.setVisible(this.sprite.visible);
   }
 }

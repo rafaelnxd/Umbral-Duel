@@ -12,9 +12,10 @@ import { FighterEntity } from "./FighterEntity";
 import { createHudBars, updateHudBars, type HudBars } from "./hud";
 
 const FLOOR_Y = 390;
+const FIGHTER_VISUAL_FOOT_OFFSET = 39;
 const PLAYER_START_X = 300;
 const BOT_START_X = 640;
-const FIGHTER_Y = FLOOR_Y - 64;
+const FIGHTER_Y = FLOOR_Y - FIGHTER_VISUAL_FOOT_OFFSET;
 const PLAYER_SPEED = 260;
 const JUMP_SPEED = -620;
 const ROLL_SPEED = 460;
@@ -399,6 +400,7 @@ export class GameScene extends Phaser.Scene {
 
   private syncEntityVisual(entity: FighterEntity): void {
     entity.sprite.setFlipX(entity.model.facing === "left");
+    entity.syncSilhouette();
     const defenseTint = entity.model.state === "block" || entity.model.state === "parry" ? 0x8cc7ff : entity.baseTint;
     const stunTint = entity.model.state === "postureBroken" ? 0xffd15c : defenseTint;
     entity.sprite.setTint(stunTint);
@@ -453,20 +455,28 @@ export class GameScene extends Phaser.Scene {
   private playEntityAnimation(entity: FighterEntity): void {
     if (entity.model.state === "attack") {
       entity.sprite.anims.play("fighter-attack", true);
+      entity.silhouette.anims.play("fighter-attack", true);
     } else if (entity.model.state === "parry") {
       entity.sprite.anims.play("fighter-parry", true);
+      entity.silhouette.anims.play("fighter-parry", true);
     } else if (entity.model.state === "block") {
       entity.sprite.anims.play("fighter-block", true);
+      entity.silhouette.anims.play("fighter-block", true);
     } else if (entity.model.state === "roll") {
       entity.sprite.anims.play("fighter-roll", true);
+      entity.silhouette.anims.play("fighter-roll", true);
     } else if (entity.model.state === "postureBroken" || entity.model.state === "hitstun") {
       entity.sprite.anims.play("fighter-stun", true);
+      entity.silhouette.anims.play("fighter-stun", true);
     } else if (!entity.model.grounded || entity.model.state === "jump") {
       entity.sprite.anims.play("fighter-jump", true);
+      entity.silhouette.anims.play("fighter-jump", true);
     } else if (entity.model.state === "run") {
       entity.sprite.anims.play("fighter-run", true);
+      entity.silhouette.anims.play("fighter-run", true);
     } else {
       entity.sprite.anims.play("fighter-idle", true);
+      entity.silhouette.anims.play("fighter-idle", true);
     }
   }
 
