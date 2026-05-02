@@ -51,4 +51,35 @@ describe("combat rules", () => {
     expect(outcome.defender.life).toBe(100);
     expect(outcome.defender.posture).toBe(100);
   });
+
+  it("clean hits apply life damage, posture damage, and temporary hitstun", () => {
+    const attacker = createFighter("attacker", "right");
+    const defender = createFighter("defender", "left");
+
+    const outcome = resolveHit(attacker, defender, LIGHT_ATTACK);
+
+    expect(outcome.result).toBe("hit");
+    expect(outcome.defender.life).toBe(88);
+    expect(outcome.defender.posture).toBe(84);
+    expect(outcome.defender.state).toBe("hitstun");
+
+    const recovered = tickFighter(outcome.defender, 180);
+    expect(recovered.state).toBe("idle");
+  });
+
+  it("parry window expires into held block", () => {
+    const defender = beginBlock(createFighter("defender", "left"));
+
+    const expired = tickFighter(defender, 141);
+
+    expect(expired.state).toBe("block");
+  });
+
+  it("idle fighters recover posture over time", () => {
+    const fighter = { ...createFighter("fighter", "right"), posture: 50 };
+
+    const recovered = tickFighter(fighter, 1000);
+
+    expect(recovered.posture).toBe(59);
+  });
 });
