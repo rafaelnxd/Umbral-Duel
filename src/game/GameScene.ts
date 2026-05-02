@@ -8,6 +8,7 @@ import { CombatSystem, type CombatEvent } from "./CombatSystem";
 import { BotController } from "./controllers/BotController";
 import { PlayerController } from "./controllers/PlayerController";
 import type { ControllerContext } from "./controllers/types";
+import { FeedbackSystem } from "./FeedbackSystem";
 import { FighterEntity } from "./FighterEntity";
 import { createHudBars, updateHudBars, type HudBars } from "./hud";
 
@@ -24,6 +25,7 @@ export class GameScene extends Phaser.Scene {
   private playerEntity!: FighterEntity;
   private botEntity!: FighterEntity;
   private combatSystem = new CombatSystem();
+  private feedback!: FeedbackSystem;
   private botController = new BotController();
   private keys!: Record<"left" | "right" | "jump" | "roll" | "reset" | "hitboxes", Phaser.Input.Keyboard.Key>;
   private pointerState = { attackQueued: false, blockHeld: false };
@@ -145,10 +147,12 @@ export class GameScene extends Phaser.Scene {
       .setVisible(false);
     this.updateScoreText();
     this.hitboxGraphics = this.add.graphics().setDepth(20);
+    this.feedback = new FeedbackSystem(this, (entity) => this.syncEntityVisual(entity));
   }
 
   update(_: number, deltaMs: number): void {
     this.syncGrounded();
+    this.feedback.update(deltaMs);
 
     if (this.applySpriteTestMode(deltaMs)) {
       this.syncVisuals();
@@ -161,6 +165,17 @@ export class GameScene extends Phaser.Scene {
     this.handleReset();
     this.handleHitboxToggle();
     if (this.roundOver) {
+      this.playerEntity.sprite.setVelocity(0, 0);
+      this.botEntity.sprite.setVelocity(0, 0);
+      this.syncVisuals();
+      this.updateHud();
+      this.updateDebugText();
+      this.drawHitboxDebug();
+      this.updateDebugProbe();
+      return;
+    }
+
+    if (this.feedback.isFrozen) {
       this.playerEntity.sprite.setVelocity(0, 0);
       this.botEntity.sprite.setVelocity(0, 0);
       this.syncVisuals();
@@ -290,23 +305,7 @@ export class GameScene extends Phaser.Scene {
     if (event.result === "none" || event.result === "invulnerable") return;
 
     const defender = event.defenderId === this.playerEntity.id ? this.playerEntity : this.botEntity;
-    if (event.result === "hit") {
-      this.spawnEffect(AssetKeys.hit, event.x, event.y, 0xffffff);
-      this.flashEntity(defender, 0xff5c5c, 90);
-      this.cameras.main.shake(70, 0.0025);
-    } else if (event.result === "blocked") {
-      this.spawnEffect(AssetKeys.hit, event.x, event.y, 0x8cc7ff);
-      this.flashEntity(defender, 0x8cc7ff, 80);
-    } else if (event.result === "parried") {
-      this.spawnEffect(AssetKeys.parry, event.x, event.y, 0xfff1a8);
-      this.flashEntity(defender, 0xfff1a8, 110);
-      this.cameras.main.shake(95, 0.0035);
-    }
-
-    if (event.defenderPostureBroken) {
-      this.spawnEffect(AssetKeys.postureBreak, event.x, event.y - 28, 0xffd15c);
-      this.flashEntity(defender, 0xffd15c, 140);
-    }
+    this.feedback.onCombatResult(event.result, defender, event.x, event.y, event.defenderPostureBroken);
   }
 
   private handleDeaths(): void {
@@ -320,8 +319,7 @@ export class GameScene extends Phaser.Scene {
     this.roundOver = true;
     this.updateScoreText();
     this.roundText.setText(playerWon ? "PLAYER WINS" : "BOT WINS").setVisible(true);
-    this.spawnEffect(
-      AssetKeys.postureBreak,
+    this.feedback.onRoundEnd(
       this.playerEntity.model.life <= 0 ? this.playerEntity.sprite.x : this.botEntity.sprite.x,
       this.playerEntity.model.life <= 0 ? this.playerEntity.sprite.y - 52 : this.botEntity.sprite.y - 52
     );
@@ -370,23 +368,6 @@ export class GameScene extends Phaser.Scene {
       `bot intent: ${this.botController.lastDecision}`,
       `hitboxes: ${this.showHitboxes ? "on" : "off"}`
     ]);
-  }
-
-  private spawnEffect(key: string, x: number, y: number, tint = 0xffffff): void {
-    const effect = this.add.image(x, y, key).setDepth(10);
-    effect.setTint(tint);
-    this.tweens.add({
-      targets: effect,
-      alpha: 0,
-      scale: 1.4,
-      duration: 220,
-      onComplete: () => effect.destroy()
-    });
-  }
-
-  private flashEntity(entity: FighterEntity, tint: number, durationMs: number): void {
-    entity.sprite.setTint(tint);
-    this.time.delayedCall(durationMs, () => this.syncEntityVisual(entity));
   }
 
   private updateScoreText(): void {
