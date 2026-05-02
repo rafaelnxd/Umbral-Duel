@@ -11,7 +11,7 @@ import type { ControllerContext } from "./controllers/types";
 import { FighterEntity } from "./FighterEntity";
 import { createHudBars, updateHudBars, type HudBars } from "./hud";
 
-const FLOOR_Y = 440;
+const FLOOR_Y = 390;
 const PLAYER_START_X = 300;
 const BOT_START_X = 640;
 const FIGHTER_Y = FLOOR_Y - 64;
@@ -60,11 +60,11 @@ export class GameScene extends Phaser.Scene {
 
   create(): void {
     this.spriteTest = new URLSearchParams(window.location.search).get("spriteTest");
-    this.add.image(480, 270, AssetKeys.arena);
+    this.add.image(480, 270, AssetKeys.arena).setDisplaySize(960, 540);
     this.physics.world.setBounds(0, 0, 960, 540);
     this.createAnimations();
 
-    const floor = this.add.rectangle(480, FLOOR_Y + 40, 960, 80, 0x211820);
+    const floor = this.add.rectangle(480, FLOOR_Y + 40, 960, 80, 0x211820, 0);
     this.physics.add.existing(floor, true);
 
     this.keys = {

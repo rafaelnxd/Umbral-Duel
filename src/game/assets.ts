@@ -10,7 +10,7 @@ export const AssetKeys = {
 export const AssetPaths = {
   fighter: "assets/sprites/fighter-imagegen-sheet-v2-cropped-transparent.png",
   dummy: "assets/sprites/dummy-sheet.png",
-  arena: "assets/arena/gothic-arena-placeholder.png",
+  arena: "assets/arena/umbral-cathedral-arena.png",
   hit: "assets/effects/hit.png",
   parry: "assets/effects/parry.png",
   postureBreak: "assets/effects/posture-break.png"
